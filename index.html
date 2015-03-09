@@ -20,11 +20,11 @@
       <div class="row">
         <div class="col s3" id="inputArea">
           <div class="row">
-            <input type="text" ng-model="business" auto-complete ui-items="businesses" ng-keyup="findMatch()" placeholder="what r u lukn for?" />
-            <input type="text" ng-model="location" auto-complete ui-items="regions" ng-keyup="findRegionMatch()" placeholder="where exactly" />
+            <input type="text" ng-model="business" auto-complete ui-items="businesses" ng-keyup="findMatch()" placeholder="Search for business" />
+            <input type="text" ng-model="location" auto-complete ui-items="regions" ng-keyup="findRegionMatch()" placeholder="Location" />
             <button ng-click="search()">Search</button>
           </div>
-          <div class="row" id="info"><span class="center-align">List of result</span>
+          <div class="row" id="info"><span class="center-align"><h5>Search Result</h3></span>
             <div ng-repeat="place in places">
               <ul class="collection">
                 <li class="collection-item">Name: {{place.name}}</li>
