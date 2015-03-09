@@ -1,0 +1,14 @@
+#map {
+  height: 720px;
+  /*width: 950px;*/
+}
+
+#info{
+  overflow: auto;
+  height: 550px;
+  background-color: rgba(238, 110, 115, 0.3);
+}
+
+#inputArea{
+  
+}
