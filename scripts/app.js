@@ -1,12 +1,11 @@
 var businessFinder = angular.module("businessFinder", []);
 
 businessFinder.controller("appCntrl", ["$scope", "getResource", function($scope, getResource) {
+  $scope.warning = false;
+  $scope.results = false;
   $scope.businesses = [];
   $scope.regions = [];
   $scope.allInfo = [];
-  // $scope.business = '';
-  // $scope.location = 'Canada';
-  console.log(getResource);
   $scope.mapOptions = {
     center: {
       lat: 45.421529600000000000,
@@ -25,9 +24,7 @@ businessFinder.controller("appCntrl", ["$scope", "getResource", function($scope,
   $scope.marker.setMap($scope.map);
 
   $scope.findMatch = function() {
-    console.log($scope.business);
     getResource.getMatch($scope.business).success(function(match) {
-      console.log(match);
       $scope.values = match.suggestedValues;
       angular.forEach($scope.values, function(val, index) {
         $scope.businesses.push(val.value);
@@ -37,7 +34,6 @@ businessFinder.controller("appCntrl", ["$scope", "getResource", function($scope,
 
   $scope.findRegionMatch = function() {
     getResource.getRegionMatch($scope.location).success(function(data) {
-      console.log(data);
       $scope.list = data.suggestedValues;
       angular.forEach($scope.list, function(val, index) {
         $scope.regions.push(val.value);
@@ -46,13 +42,35 @@ businessFinder.controller("appCntrl", ["$scope", "getResource", function($scope,
   };
 
   $scope.search = function() {
-    // if ($scope.business === "" || $scope.location === empty) {
-
-    // }
-    getResource.getBusinessList($scope.location, $scope.business).success(function(resp) {
+    if ($scope.business === undefined || $scope.location === undefined) {
+      $scope.forbidden = false;
+      $scope.badInput = false;
+      $scope.results = false;
+      $scope.warning = true;
+    } else if (isNaN(Number($scope.business)) === false || isNaN(Number($scope.location)) === false) {
+      $scope.forbidden = false;
+      $scope.results = false;
+      $scope.warning = false;
+      $scope.badInput = true;
+    } else {
+      $scope.badInput = false;
+      $scope.forbidden = false;
+      $scope.warning = false;
+      $scope.preloader = true;
+      getResource.getBusinessList($scope.location, $scope.business).success(function(resp) {
+        if (resp.listings.length === 0) {
+          $scope.badInput = false;
+          $scope.preloader = false;
+          $scope.results = false;
+          $scope.warning = true;
+        }
+        $scope.badInput = false;
+        $scope.forbidden = false;
+        $scope.preloader = false;
+        $scope.results = true;
         $scope.places = resp.listings;
-        $scope.lat = $scope.places[0].geoCode.latitude;
-        $scope.longitude = $scope.places[0].geoCode.longitude;
+        // $scope.lat = $scope.places[0].geoCode.latitude;
+        // $scope.longitude = $scope.places[0].geoCode.longitude;
 
         $scope.view = function(index) {
           $scope.latd = $scope.places[index].geoCode.latitude;
@@ -73,24 +91,26 @@ businessFinder.controller("appCntrl", ["$scope", "getResource", function($scope,
           });
           $scope.marker.setMap($scope.map);
         };
+      }).error(function(err) {
+        if (err.error.code === 400) {
+          $scope.badInput= false;
+          $scope.preloader = false;
+          $scope.results = false;
+          $scope.warning = true;
+        } else if (err.error.code === 403) {
+          $scope.badInput= false;
+          $scope.results = false;
+          $scope.preloader = false;
+          $scope.forbidden = true;
+        }
       });
-      // getResource.getBusinessDetails($scope.location, $scope.business).success(function(response) {
-      //   console.log(response);
-      // })
+    }
   };
+}]);
 
-  // $scope.autocomplete = function() {
-  //   getResource.getMatch($scope.location).success(function(data) {
-  //     console.log(data);
-  //   })
-  // }
-}])
-
-.directive('autoComplete', function($timeout) {
-  console.log('Halo');
-  return function (scope, elm, iAttrs) {
+businessFinder.directive('autoComplete', function($timeout) {
+  return function(scope, elm, iAttrs) {
     var elms = $(elm);
-    console.log(elm);
     elms.autocomplete({
       source: scope[iAttrs.uiItems],
       select: function() {
